@@ -457,6 +457,10 @@ export function openHelpModal(): void {
             <tr><td><kbd>Ctrl+Z</kbd></td><td>Ångra senaste ändring</td></tr>
             <tr><td><kbd>Ctrl+Y</kbd> / <kbd>Ctrl+Shift+Z</kbd></td><td>Gör om</td></tr>
             <tr><td><kbd>Ctrl+S</kbd></td><td>Spara diagram</td></tr>
+            <tr><td><kbd>Ctrl+G</kbd></td><td>Gruppera markerade element</td></tr>
+            <tr><td><kbd>Ctrl+Shift+G</kbd></td><td>Avgruppera</td></tr>
+            <tr><td><kbd>Ctrl+]</kbd></td><td>Till förgrunden</td></tr>
+            <tr><td><kbd>Ctrl+[</kbd></td><td>Till bakgrunden</td></tr>
             <tr><td><kbd>?</kbd></td><td>Visa den här hjälpen</td></tr>
           </tbody>
         </table>

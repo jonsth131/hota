@@ -5,7 +5,7 @@
 import type { DiagramElement } from '../types.js';
 import { screenToWorld } from './canvas.js';
 import { getElementNode } from './elements.js';
-import { updateElement, removeElement, getElements, getConnections, addConnection, undo, redo } from '../store/model.js';
+import { updateElement, removeElement, getElements, getConnections, addConnection, undo, redo, groupElements, ungroupElements, bringToFront, sendToBack } from '../store/model.js';
 import { showGhostLine, hideGhostLine, updateConnectionPathsForElement } from './connections.js';
 import { showResizeHandles, hideResizeHandles, updateResizeHandles, isResizeDragging } from './resize.js';
 import {
@@ -543,6 +543,36 @@ function onKeyDown(e: KeyboardEvent): void {
     clearSelectionVisual();
     selectedIds = new Set();
     onSelectCb?.(new Set());
+    return;
+  }
+  // Ctrl+G → gruppera markerade element
+  if (e.ctrlKey && !e.shiftKey && e.key === 'g') {
+    e.preventDefault();
+    if (selectedIds.size >= 2) groupElements([...selectedIds]);
+    return;
+  }
+  // Ctrl+Shift+G → avgruppera
+  if (e.ctrlKey && e.shiftKey && e.key === 'g') {
+    e.preventDefault();
+    const ids = [...selectedIds];
+    const el = ids.length === 1
+      ? getElements().find((x) => x.id === ids[0])
+      : getElements().find((x) => x.id === ids[0] && x.groupId);
+    const gid = el?.groupId ?? getElements().find((x) => ids.includes(x.id) && x.groupId)?.groupId;
+    if (gid) ungroupElements(gid);
+    return;
+  }
+  // Ctrl+] → till förgrunden
+  if (e.ctrlKey && e.key === ']') {
+    e.preventDefault();
+    if (selectedIds.size > 0) bringToFront([...selectedIds]);
+    return;
+  }
+  // Ctrl+[ → till bakgrunden
+  if (e.ctrlKey && e.key === '[') {
+    e.preventDefault();
+    if (selectedIds.size > 0) sendToBack([...selectedIds]);
+    return;
   }
 }
 
