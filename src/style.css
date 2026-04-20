@@ -458,8 +458,10 @@ select   { cursor: pointer; }
 .connecting-active .port { opacity: 0.6; }
 .connecting-active .diagram-element:hover .port { opacity: 1; }
 .connecting-active { cursor: crosshair; }
-.conn-path { stroke: var(--text-muted); stroke-width: 1.5; fill: none; cursor: pointer; transition: stroke 0.1s; }
+.conn-hit  { stroke: transparent; stroke-width: 16; fill: none; cursor: pointer; }
+.conn-path { stroke: var(--text-muted); stroke-width: 1.5; fill: none; cursor: pointer; transition: stroke 0.1s; pointer-events: none; }
 .conn-path:hover { stroke: var(--accent); }
+.diagram-connection:hover .conn-path { stroke: var(--accent); }
 .diagram-connection.selected .conn-path { stroke: var(--accent); stroke-width: 2.5; }
 .conn-label { fill: var(--text-muted); font-size: 11px; text-anchor: middle; dominant-baseline: middle; pointer-events: none; }
 .arrow-head { fill: var(--text-muted); }

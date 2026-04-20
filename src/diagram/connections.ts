@@ -39,6 +39,10 @@ export function renderConnection(
   const g = document.createElementNS(SVG_NS, 'g') as SVGGElement;
   g.setAttribute('data-id', conn.id);
   g.classList.add('diagram-connection');
+  // Wide invisible path for easier hit-testing
+  const hit = makePath(p1, fromSide, p2, toSide);
+  hit.classList.add('conn-hit');
+  g.appendChild(hit);
   const p = makePath(p1, fromSide, p2, toSide);
   p.setAttribute('marker-end', 'url(#arrow)');
   p.classList.add('conn-path');
