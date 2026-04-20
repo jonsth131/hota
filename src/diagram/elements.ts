@@ -7,14 +7,6 @@ import { getBoundaryPoints, type BoundaryPoint } from './boundary.js';
 const SVG_NS = 'http://www.w3.org/2000/svg';
 const nodeRegistry = new Map<string, SVGGElement>();
 
-export interface Port {
-  id: string;
-  elementId: string;
-  side: PortSide;
-  x: number;
-  y: number;
-}
-
 // ── Public API ─────────────────────────────────────────────
 
 export function renderElement(el: DiagramElement, layer: SVGGElement): SVGGElement {

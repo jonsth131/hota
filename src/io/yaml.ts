@@ -1,8 +1,6 @@
 import yaml from 'js-yaml';
 import type { Model } from '../types.js';
-import { validateModel, triggerDownload } from './json.js';
-
-const MAX_FILE_SIZE = 5 * 1024 * 1024;
+import { validateModel, triggerDownload, MAX_FILE_SIZE } from './json.js';
 
 export function exportYaml(model: Model): string {
   return yaml.dump(model, { lineWidth: 120 });

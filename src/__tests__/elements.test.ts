@@ -3,7 +3,7 @@
  * These tests cover coordinate math that doesn't require a DOM.
  */
 import { describe, it, expect } from 'vitest';
-import { toPolylineStr, getAnchorPoint, nearestPort } from '../diagram/elements.js';
+import { toPolylineStr, toSmoothPathD, getAnchorPoint, nearestPort } from '../diagram/elements.js';
 import type { DiagramElement } from '../types.js';
 
 // ── toPolylineStr ──────────────────────────────────────────
@@ -118,5 +118,36 @@ describe('nearestPort', () => {
     const valid = new Set(['top', 'right', 'bottom', 'left']);
     expect(valid.has(nearestPort(el, 50, 50))).toBe(true);
     expect(valid.has(nearestPort(el, 500, 500))).toBe(true);
+  });
+});
+
+// ── toSmoothPathD ──────────────────────────────────────────
+
+describe('toSmoothPathD', () => {
+  it('returns empty string for no points', () => {
+    expect(toSmoothPathD([])).toBe('');
+  });
+
+  it('returns single move command for one point', () => {
+    expect(toSmoothPathD([{ x: 10, y: 20 }])).toBe('M10,20');
+  });
+
+  it('returns a straight line for two points', () => {
+    expect(toSmoothPathD([{ x: 0, y: 0 }, { x: 100, y: 0 }])).toBe('M0,0 L100,0');
+  });
+
+  it('uses quadratic bezier through midpoints for three points', () => {
+    const pts = [{ x: 0, y: 0 }, { x: 50, y: 50 }, { x: 100, y: 0 }];
+    const d = toSmoothPathD(pts);
+    expect(d).toContain('M0,0');
+    expect(d).toContain('Q50,50');
+    expect(d).toContain('L100,0');
+  });
+
+  it('produces a path starting with M and ending with L for four+ points', () => {
+    const pts = [{ x: 0, y: 0 }, { x: 30, y: 30 }, { x: 70, y: 30 }, { x: 100, y: 0 }];
+    const d = toSmoothPathD(pts);
+    expect(d.startsWith('M')).toBe(true);
+    expect(d).toContain('L100,0');
   });
 });

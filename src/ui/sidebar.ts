@@ -56,11 +56,6 @@ export function highlightListItems(ids: Set<string>): void {
   }
 }
 
-/** @deprecated Use highlightListItems */
-export function highlightListItem(id: string | null): void {
-  highlightListItems(id ? new Set([id]) : new Set());
-}
-
 export function getCurrentTool(): ToolMode { return currentTool; }
 
 function setTool(tool: ToolMode, buttons: NodeListOf<HTMLButtonElement>): void {

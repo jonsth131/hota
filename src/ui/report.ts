@@ -6,19 +6,18 @@
 
 import type { Threat, DiagramElement, Connection } from '../types.js';
 import { getThreats, getElements, getConnections, getMetadata, getMethodology } from '../store/model.js';
-
-const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+import { esc } from '../utils/sanitize.js';
 
 const SEVERITY_ORDER: Record<string, number> = {
   Critical: 0, High: 1, Medium: 2, Low: 3, Informational: 4,
 };
 
-function severityClass(s: string): string {
+export function severityClass(s: string): string {
   return { Critical: 'sev-critical', High: 'sev-high', Medium: 'sev-medium',
            Low: 'sev-low', Informational: 'sev-info' }[s] ?? '';
 }
 
-function statusClass(s: string): string {
+export function statusClass(s: string): string {
   return `status-${s.toLowerCase().replace(/\s+/g, '-')}`;
 }
 

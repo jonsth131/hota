@@ -131,13 +131,13 @@ function makePath(
 
 const BEZIER_CONTROL_OFFSET = 60;
 
-function bezierD(p1: Point, s1: PortSide, p2: Point, s2: PortSide): string {
+export function bezierD(p1: Point, s1: PortSide, p2: Point, s2: PortSide): string {
   const c1 = controlPoint(p1, s1, BEZIER_CONTROL_OFFSET);
   const c2 = controlPoint(p2, s2, BEZIER_CONTROL_OFFSET);
   return `M${p1.x},${p1.y} C${c1.x},${c1.y} ${c2.x},${c2.y} ${p2.x},${p2.y}`;
 }
 
-function controlPoint(p: Point, side: PortSide, offset: number): Point {
+export function controlPoint(p: Point, side: PortSide, offset: number): Point {
   switch (side) {
     case 'top':    return { x: p.x,          y: p.y - offset };
     case 'right':  return { x: p.x + offset, y: p.y };
@@ -146,6 +146,6 @@ function controlPoint(p: Point, side: PortSide, offset: number): Point {
   }
 }
 
-function midpoint(p1: Point, p2: Point): Point {
+export function midpoint(p1: Point, p2: Point): Point {
   return { x: (p1.x + p2.x) / 2, y: (p1.y + p2.y) / 2 };
 }

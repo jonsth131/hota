@@ -1,6 +1,6 @@
 import type { Model } from '../types.js';
 
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
+export const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
 const CURRENT_VERSION = '1.0';
 
 interface ValidationResult {
