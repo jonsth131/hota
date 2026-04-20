@@ -81,3 +81,50 @@ export function getPastaCategories(): PastaCategory[] {
     name: `Steg ${s.stage}: ${s.name}`,
   }));
 }
+
+// ── Threat templates ───────────────────────────────────────
+
+import type { ThreatTemplate } from './stride.js';
+
+const PASTA_THREAT_TEMPLATES: Record<string, ThreatTemplate[]> = {
+  Process: [
+    { title: 'Injektionsattack mot processindata', category: 'P4', severity: 'Critical' },
+    { title: 'Otillräcklig åtkomstkontroll till tjänst', category: 'P4', severity: 'High' },
+    { title: 'Konfigurationsfel exponerar känslig funktion', category: 'P5', severity: 'High' },
+    { title: 'Felhantering avslöjar interna systemdetaljer', category: 'P5', severity: 'Medium' },
+    { title: 'Avsaknad av rate-limiting möjliggör brute-force', category: 'P4', severity: 'High' },
+    { title: 'Osäkra beroenden med kända sårbarheter', category: 'P5', severity: 'High' },
+  ],
+  ExternalEntity: [
+    { title: 'Extern aktör saknar stark autentisering', category: 'P4', severity: 'High' },
+    { title: 'Otillräcklig validering av extern input', category: 'P5', severity: 'High' },
+    { title: 'Extern aktör kan skicka skadlig payload', category: 'P4', severity: 'Critical' },
+  ],
+  DataStore: [
+    { title: 'Känslig data lagras okrypterad', category: 'P5', severity: 'Critical' },
+    { title: 'SQL/NoSQL-injektionsattack mot datalager', category: 'P4', severity: 'Critical' },
+    { title: 'Otillräcklig åtkomstkontroll till datalager', category: 'P4', severity: 'High' },
+    { title: 'Avsaknad av auditloggning för känsliga operationer', category: 'P5', severity: 'Medium' },
+    { title: 'Backup saknar kryptering', category: 'P5', severity: 'High' },
+  ],
+  TrustBoundary: [
+    { title: 'Otillräcklig validering vid gränssättning', category: 'P4', severity: 'High' },
+    { title: 'Felaktig konfiguration av förtroendesegräns', category: 'P5', severity: 'High' },
+    { title: 'Gräns kringgås via alternativ kommunikationsväg', category: 'P6', severity: 'Critical' },
+  ],
+  TrustZone: [
+    { title: 'Privilegieskalning inom förtroendezon', category: 'P4', severity: 'Critical' },
+    { title: 'Lateral rörelse möjlig inom zon', category: 'P6', severity: 'High' },
+    { title: 'Exfiltrering av data ut ur förtroendezon', category: 'P4', severity: 'High' },
+  ],
+  connection: [
+    { title: 'Transport saknar kryptering (TLS/mTLS)', category: 'P5', severity: 'High' },
+    { title: 'Avlyssning av osäkrat dataflöde', category: 'P4', severity: 'High' },
+    { title: 'Man-in-the-middle-attack på dataflöde', category: 'P6', severity: 'Critical' },
+    { title: 'Svag certifikatvalidering möjliggör spoofing', category: 'P5', severity: 'High' },
+  ],
+};
+
+export function getPastaThreatTemplates(elementType: string): ThreatTemplate[] {
+  return PASTA_THREAT_TEMPLATES[elementType] ?? PASTA_THREAT_TEMPLATES['connection']!;
+}

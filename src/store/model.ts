@@ -16,6 +16,7 @@ const _listeners = new Map<string, Set<Listener<unknown>>>();
 // ── State ──────────────────────────────────────────────────
 
 const state: Model = {
+
   version: '1.0',
   metadata: {
     name: 'Namnlöst projekt',
@@ -32,6 +33,41 @@ const state: Model = {
   connections: [],
   threats: [],
 };
+
+// ── Undo / Redo history ────────────────────────────────────
+
+const MAX_HISTORY = 50;
+const _history: string[] = [];
+const _redoStack: string[] = [];
+let _historyPaused = false;
+
+function pushHistory(): void {
+  if (_historyPaused) return;
+  _redoStack.length = 0;
+  _history.push(JSON.stringify(state));
+  if (_history.length > MAX_HISTORY) _history.shift();
+}
+
+export function undo(): void {
+  const snap = _history.pop();
+  if (!snap) return;
+  _redoStack.push(JSON.stringify(state));
+  _historyPaused = true;
+  loadModel(JSON.parse(snap) as Partial<Model>);
+  _historyPaused = false;
+}
+
+export function redo(): void {
+  const snap = _redoStack.pop();
+  if (!snap) return;
+  _history.push(JSON.stringify(state));
+  _historyPaused = true;
+  loadModel(JSON.parse(snap) as Partial<Model>);
+  _historyPaused = false;
+}
+
+export function canUndo(): boolean { return _history.length > 0; }
+export function canRedo(): boolean { return _redoStack.length > 0; }
 
 // ── Event emitter ──────────────────────────────────────────
 
@@ -63,6 +99,7 @@ export const getMethodology = (): Methodology     => state.methodology;
 // ── Metadata ───────────────────────────────────────────────
 
 export function updateMetadata(patch: Partial<ProjectMetadata>): void {
+  pushHistory();
   Object.assign(state.metadata, patch);
   emit('metadata:updated', state.metadata);
 }
@@ -70,6 +107,7 @@ export function updateMetadata(patch: Partial<ProjectMetadata>): void {
 // ── Methodology ────────────────────────────────────────────
 
 export function setMethodology(method: Methodology): void {
+  pushHistory();
   state.methodology = method;
   emit('methodology:changed', method);
 }
@@ -84,6 +122,7 @@ interface AddElementOpts {
 }
 
 export function addElement(opts: AddElementOpts): DiagramElement {
+  pushHistory();
   const def = elementDefaults(opts.type);
   const metadata: Record<string, unknown> = {};
   // TrustBoundary stores its shape as an array of absolute world-coord points
@@ -111,6 +150,7 @@ export function addElement(opts: AddElementOpts): DiagramElement {
 export function updateElement(id: string, patch: Partial<DiagramElement>): void {
   const el = state.elements.find((e) => e.id === id);
   if (!el) return;
+  pushHistory();
   Object.assign(el, patch);
   emit('element:updated', el);
 }
@@ -118,15 +158,16 @@ export function updateElement(id: string, patch: Partial<DiagramElement>): void 
 export function removeElement(id: string): void {
   const idx = state.elements.findIndex((e) => e.id === id);
   if (idx === -1) return;
+  pushHistory();
   state.elements.splice(idx, 1);
   state.connections
     .filter((c) => c.from === id || c.to === id)
     .map((c) => c.id)
-    .forEach(removeConnection);
+    .forEach(_removeConnectionInternal);
   state.threats
     .filter((t) => t.elementId === id)
     .map((t) => t.id)
-    .forEach(removeThreat);
+    .forEach(_removeThreatInternal);
   emit('element:removed', id);
 }
 
@@ -139,6 +180,7 @@ interface AddConnectionOpts {
 }
 
 export function addConnection(opts: AddConnectionOpts): Connection {
+  pushHistory();
   const conn: Connection = {
     id: generateId('conn'),
     from: opts.from,
@@ -154,6 +196,7 @@ export function addConnection(opts: AddConnectionOpts): Connection {
 export function updateConnection(id: string, patch: Partial<Connection>): void {
   const conn = state.connections.find((c) => c.id === id);
   if (!conn) return;
+  pushHistory();
   Object.assign(conn, patch);
   emit('connection:updated', conn);
 }
@@ -161,8 +204,32 @@ export function updateConnection(id: string, patch: Partial<Connection>): void {
 export function removeConnection(id: string): void {
   const idx = state.connections.findIndex((c) => c.id === id);
   if (idx === -1) return;
+  pushHistory();
   state.connections.splice(idx, 1);
+  state.threats
+    .filter((t) => t.elementId === id)
+    .map((t) => t.id)
+    .forEach(_removeThreatInternal);
   emit('connection:removed', id);
+}
+
+// Internal cascade helpers — no pushHistory, used by removeElement/removeConnection
+function _removeConnectionInternal(id: string): void {
+  const idx = state.connections.findIndex((c) => c.id === id);
+  if (idx === -1) return;
+  state.connections.splice(idx, 1);
+  state.threats
+    .filter((t) => t.elementId === id)
+    .map((t) => t.id)
+    .forEach(_removeThreatInternal);
+  emit('connection:removed', id);
+}
+
+function _removeThreatInternal(id: string): void {
+  const idx = state.threats.findIndex((t) => t.id === id);
+  if (idx === -1) return;
+  state.threats.splice(idx, 1);
+  emit('threat:removed', id);
 }
 
 // ── Threats ────────────────────────────────────────────────
@@ -170,6 +237,7 @@ export function removeConnection(id: string): void {
 type AddThreatOpts = Omit<Threat, 'id'>;
 
 export function addThreat(opts: AddThreatOpts): Threat {
+  pushHistory();
   const threat: Threat = {
     id: generateId('thr'),
     elementId: opts.elementId,
@@ -188,6 +256,7 @@ export function addThreat(opts: AddThreatOpts): Threat {
 export function updateThreat(id: string, patch: Partial<Threat>): void {
   const t = state.threats.find((x) => x.id === id);
   if (!t) return;
+  pushHistory();
   Object.assign(t, patch);
   emit('threat:updated', t);
 }
@@ -195,6 +264,7 @@ export function updateThreat(id: string, patch: Partial<Threat>): void {
 export function removeThreat(id: string): void {
   const idx = state.threats.findIndex((t) => t.id === id);
   if (idx === -1) return;
+  pushHistory();
   state.threats.splice(idx, 1);
   emit('threat:removed', id);
 }
@@ -202,6 +272,10 @@ export function removeThreat(id: string): void {
 // ── Full model load/reset ──────────────────────────────────
 
 export function loadModel(model: Partial<Model>): void {
+  if (!_historyPaused) {
+    _history.length = 0;
+    _redoStack.length = 0;
+  }
   state.version = model.version ?? '1.0';
   Object.assign(state.metadata, model.metadata ?? {});
   state.methodology = model.methodology ?? 'STRIDE';
@@ -212,6 +286,8 @@ export function loadModel(model: Partial<Model>): void {
 }
 
 export function resetModel(): void {
+  _history.length = 0;
+  _redoStack.length = 0;
   state.metadata = {
     name: 'Namnlöst projekt',
     author: '',

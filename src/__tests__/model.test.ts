@@ -6,6 +6,7 @@ import {
   loadModel, resetModel, serializeModel,
   getMetadata, updateMetadata, getMethodology, setMethodology,
   elementDefaultSize,
+  undo, redo, canUndo, canRedo,
   on,
 } from '../store/model.js';
 
@@ -209,5 +210,56 @@ describe('elementDefaultSize', () => {
 
   it('returns correct size for TrustZone', () => {
     expect(elementDefaultSize('TrustZone')).toEqual({ w: 200, h: 150 });
+  });
+});
+
+describe('Undo / Redo', () => {
+  it('canUndo returns false on fresh model', () => {
+    expect(canUndo()).toBe(false);
+  });
+
+  it('canUndo returns true after a mutation', () => {
+    addElement({ type: 'Process', x: 0, y: 0 });
+    expect(canUndo()).toBe(true);
+  });
+
+  it('undo reverts an addElement', () => {
+    addElement({ type: 'Process', x: 0, y: 0 });
+    undo();
+    expect(getElements()).toHaveLength(0);
+  });
+
+  it('redo re-applies after undo', () => {
+    addElement({ type: 'Process', x: 0, y: 0 });
+    undo();
+    expect(canRedo()).toBe(true);
+    redo();
+    expect(getElements()).toHaveLength(1);
+  });
+
+  it('undo reverts a label update', () => {
+    const el = addElement({ type: 'Process', x: 0, y: 0 });
+    updateElement(el.id, { label: 'Ändrad' });
+    undo();
+    expect(getElements()[0]?.label).toBe('Process');
+  });
+
+  it('loadModel clears history', () => {
+    addElement({ type: 'Process', x: 0, y: 0 });
+    loadModel({});
+    expect(canUndo()).toBe(false);
+  });
+
+  it('removeConnection cascades threat deletion and undoes both', () => {
+    const a  = addElement({ type: 'Process', x: 0, y: 0 });
+    const b  = addElement({ type: 'Process', x: 100, y: 0 });
+    const c  = addConnection({ from: a.id, to: b.id });
+    addThreat({ elementId: c.id, title: 'T', category: 'I', severity: 'Low', description: '', mitigation: '', status: 'Open' });
+    removeConnection(c.id);
+    expect(getConnections()).toHaveLength(0);
+    expect(getThreats()).toHaveLength(0);
+    undo();
+    expect(getConnections()).toHaveLength(1);
+    expect(getThreats()).toHaveLength(1);
   });
 });

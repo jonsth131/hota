@@ -2,9 +2,9 @@
  * Modals: metadata, threat editor, theme picker, save dialog, alert.
  */
 import type { Threat, Severity, ThreatStatus, Methodology } from '../types.js';
-import { getMetadata, updateMetadata, addThreat, updateThreat, getThreats, getMethodology, serializeModel } from '../store/model.js';
+import { getMetadata, updateMetadata, addThreat, updateThreat, getThreats, getElements, getConnections, getMethodology, serializeModel } from '../store/model.js';
 import { STRIDE_CATEGORIES, getThreatTemplates } from '../methodology/stride.js';
-import { getPastaCategories } from '../methodology/pasta.js';
+import { getPastaCategories, getPastaThreatTemplates } from '../methodology/pasta.js';
 import { triggerDownload } from '../io/json.js';
 import { exportYaml } from '../io/yaml.js';
 import { esc } from '../utils/sanitize.js';
@@ -251,7 +251,17 @@ export function openThreatModal(elementId: string, threatId?: string): void {
   const method      = getMethodology() as Methodology;
   const existing    = threatId ? getThreats().find((t) => t.id === threatId) : undefined;
   const categories  = method === 'STRIDE' ? STRIDE_CATEGORIES.map((c) => ({ id: c.id, name: c.name })) : getPastaCategories();
-  const templates   = getThreatTemplates(elementId.includes('conn') ? 'connection' : 'Process');
+  // Determine element type for template lookup (prefer actual type over ID heuristic)
+  const elementType = (() => {
+    const el = getElements().find((e) => e.id === elementId);
+    if (el) return el.type;
+    const conn = getConnections().find((c) => c.id === elementId);
+    if (conn) return 'connection';
+    return elementId.includes('conn') ? 'connection' : 'Process';
+  })();
+  const templates   = method === 'STRIDE'
+    ? getThreatTemplates(elementType)
+    : getPastaThreatTemplates(elementType);
   const severities: Severity[]     = ['Critical', 'High', 'Medium', 'Low', 'Informational'];
   const statuses: ThreatStatus[]   = ['Open', 'Mitigated', 'Accepted', 'Transferred', 'In Progress'];
 
@@ -424,4 +434,37 @@ export function openThemeModal(): void {
       btn.classList.add('active');
     });
   });
+}
+
+// ── Help modal ─────────────────────────────────────────────
+
+export function openHelpModal(): void {
+  const modal = document.createElement('div');
+  modal.classList.add('modal-overlay');
+  modal.innerHTML = `
+    <div class="modal modal--narrow" role="dialog" aria-modal="true" aria-labelledby="help-title">
+      <div class="modal-header">
+        <h2 id="help-title">⌨️ Kortkommandon</h2>
+        <button class="modal-close" aria-label="Stäng">✕</button>
+      </div>
+      <div class="modal-body">
+        <table class="help-table">
+          <tbody>
+            <tr><td><kbd>Delete</kbd> / <kbd>Backspace</kbd></td><td>Ta bort markerat element</td></tr>
+            <tr><td><kbd>Escape</kbd></td><td>Avbryt pågående koppling / avmarkera</td></tr>
+            <tr><td><kbd>Shift</kbd> + klick</td><td>Lägg till / ta bort från markering</td></tr>
+            <tr><td>Dubbelklick</td><td>Redigera elementnamn direkt</td></tr>
+            <tr><td><kbd>Ctrl+Z</kbd></td><td>Ångra senaste ändring</td></tr>
+            <tr><td><kbd>Ctrl+Y</kbd> / <kbd>Ctrl+Shift+Z</kbd></td><td>Gör om</td></tr>
+            <tr><td><kbd>Ctrl+S</kbd></td><td>Spara diagram</td></tr>
+            <tr><td><kbd>?</kbd></td><td>Visa den här hjälpen</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  const close = (): void => modal.remove();
+  modal.querySelector('.modal-close')?.addEventListener('click', close);
+  modal.addEventListener('click', (e) => { if (e.target === modal) close(); });
 }

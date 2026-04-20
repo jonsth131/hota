@@ -5,7 +5,7 @@
 import type { DiagramElement } from '../types.js';
 import { screenToWorld } from './canvas.js';
 import { getElementNode } from './elements.js';
-import { updateElement, removeElement, getElements, getConnections, addConnection } from '../store/model.js';
+import { updateElement, removeElement, getElements, getConnections, addConnection, undo, redo } from '../store/model.js';
 import { showGhostLine, hideGhostLine, updateConnectionPathsForElement } from './connections.js';
 import { showResizeHandles, hideResizeHandles, updateResizeHandles, isResizeDragging } from './resize.js';
 import {
@@ -14,6 +14,7 @@ import {
 } from './boundary.js';
 import { updateBoundaryPolylineDirect } from './elements.js';
 import { getCurrentTool } from '../ui/sidebar.js';
+import { openHelpModal, openSaveModal } from '../ui/modals.js';
 import {
   initMarquee, startMarquee, updateMarquee, endMarquee, isMarqueeActive,
 } from './multiselect.js';
@@ -480,6 +481,30 @@ function onDblClick(e: MouseEvent): void {
 }
 
 function onKeyDown(e: KeyboardEvent): void {
+  // Ctrl+Z → undo
+  if (e.ctrlKey && !e.shiftKey && e.key === 'z') {
+    e.preventDefault();
+    undo();
+    return;
+  }
+  // Ctrl+Y or Ctrl+Shift+Z → redo
+  if ((e.ctrlKey && e.key === 'y') || (e.ctrlKey && e.shiftKey && e.key === 'z')) {
+    e.preventDefault();
+    redo();
+    return;
+  }
+  // Ctrl+S → save
+  if (e.ctrlKey && e.key === 's') {
+    e.preventDefault();
+    openSaveModal();
+    return;
+  }
+  // ? → help (only when not typing in an input)
+  if (e.key === '?' && e.target === document.body) {
+    openHelpModal();
+    return;
+  }
+
   if (e.key === 'Escape' && connecting) {
     hideGhostLine();
     svgEl?.classList.remove('connecting-active');

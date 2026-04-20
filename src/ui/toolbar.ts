@@ -1,9 +1,9 @@
 import type { Methodology } from '../types.js';
-import { getMethodology, setMethodology, loadModel, resetModel, on } from '../store/model.js';
+import { getMethodology, setMethodology, loadModel, resetModel, on, undo, redo, canUndo, canRedo } from '../store/model.js';
 import { setZoom, resetView, getTransform } from '../diagram/canvas.js';
 import { importJson } from '../io/json.js';
 import { importYaml } from '../io/yaml.js';
-import { openSaveModal, openAlertModal, openConfirmModal } from './modals.js';
+import { openSaveModal, openAlertModal, openConfirmModal, openHelpModal } from './modals.js';
 import { clearStorage } from '../store/persistence.js';
 
 export function initToolbar(
@@ -19,11 +19,14 @@ export function initToolbar(
   const zoomLabel    = container.querySelector<HTMLSpanElement>('#zoom-label');
   const metaBtn      = container.querySelector<HTMLButtonElement>('#metadata-btn');
   const themeBtn     = container.querySelector<HTMLButtonElement>('#theme-btn');
+  const helpBtn      = container.querySelector<HTMLButtonElement>('#help-btn');
   const saveBtn      = container.querySelector<HTMLButtonElement>('#save-btn');
   const reportBtn    = container.querySelector<HTMLButtonElement>('#report-btn');
   const clearBtn     = container.querySelector<HTMLButtonElement>('#clear-btn');
   const openFile     = container.querySelector<HTMLInputElement>('#open-file');
   const projectName  = container.querySelector<HTMLSpanElement>('#project-name');
+  const undoBtn      = container.querySelector<HTMLButtonElement>('#undo-btn');
+  const redoBtn      = container.querySelector<HTMLButtonElement>('#redo-btn');
 
   if (methodSelect) {
     methodSelect.value = getMethodology();
@@ -47,8 +50,12 @@ export function initToolbar(
 
   metaBtn?.addEventListener('click', onOpenMetadata);
   themeBtn?.addEventListener('click', onOpenTheme);
+  helpBtn?.addEventListener('click', openHelpModal);
   saveBtn?.addEventListener('click', openSaveModal);
   reportBtn?.addEventListener('click', onOpenReport);
+
+  undoBtn?.addEventListener('click', () => { undo(); syncUndoRedo(); });
+  redoBtn?.addEventListener('click', () => { redo(); syncUndoRedo(); });
 
   clearBtn?.addEventListener('click', () => {
     openConfirmModal(
@@ -81,6 +88,13 @@ export function initToolbar(
   on('metadata:updated', (meta) => {
     if (projectName) projectName.textContent = meta.name;
   });
+
+  // Keep undo/redo buttons in sync with history state
+  const syncUndoRedo = (): void => {
+    if (undoBtn) undoBtn.disabled = !canUndo();
+    if (redoBtn) redoBtn.disabled = !canRedo();
+  };
+  on('*', syncUndoRedo);
 
   // Keep zoom label in sync when scroll-wheel zoom changes scale
   window.addEventListener('zoom:changed', () => updateZoomLabel(zoomLabel));

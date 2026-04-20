@@ -66,7 +66,7 @@ function refresh(container: HTMLElement, onThreat: (elementId: string, threatId?
   const el   = getElements().find((x) => x.id === _currentId);
   const conn = !el ? getConnections().find((x) => x.id === _currentId) : undefined;
   if (el)   showElement(container, el, onThreat);
-  else if (conn) showConnection(container, conn);
+  else if (conn) showConnection(container, conn, onThreat);
   else      showEmpty(container);
 }
 
@@ -104,6 +104,10 @@ function showElement(
       <label>Position</label>
       <span class="prop-readonly">x:${Math.round(el.x)} y:${Math.round(el.y)}</span>
     </div>
+    <div class="prop-group">
+      <label for="prop-notes">Anteckningar</label>
+      <textarea id="prop-notes" rows="3" placeholder="Fri text om elementet…">${esc((el.metadata['notes'] as string) ?? '')}</textarea>
+    </div>
     <hr />
     <div class="prop-threats-header">
       <h4>Hot (${threats.length})</h4>
@@ -116,6 +120,10 @@ function showElement(
 
   panel.querySelector<HTMLInputElement>('#prop-label')?.addEventListener('change', (e) => {
     updateElement(el.id, { label: (e.target as HTMLInputElement).value.trim() || el.label });
+  });
+
+  panel.querySelector<HTMLTextAreaElement>('#prop-notes')?.addEventListener('change', (e) => {
+    updateElement(el.id, { metadata: { ...el.metadata, notes: (e.target as HTMLTextAreaElement).value } });
   });
 
   panel.querySelector<HTMLButtonElement>('#add-threat-btn')?.addEventListener('click', () => {
@@ -133,9 +141,22 @@ function showElement(
 
 // ── Connection properties ──────────────────────────────────
 
-function showConnection(container: HTMLElement, conn: Connection): void {
+function showConnection(
+  container: HTMLElement,
+  conn: Connection,
+  onThreat: (elementId: string, threatId?: string) => void,
+): void {
   const panel = container.querySelector<HTMLElement>('#properties-content');
   if (!panel) return;
+
+  const elements = getElements();
+  const fromEl = elements.find((e) => e.id === conn.from);
+  const toEl   = elements.find((e) => e.id === conn.to);
+  const fromLabel = fromEl?.label ?? conn.from;
+  const toLabel   = toEl?.label   ?? conn.to;
+  const threats = getThreats().filter((t) => t.elementId === conn.id);
+  const method  = getMethodology();
+
   panel.innerHTML = `
     <div class="prop-group">
       <label>Typ</label>
@@ -147,12 +168,32 @@ function showConnection(container: HTMLElement, conn: Connection): void {
     </div>
     <div class="prop-group">
       <label>Från → Till</label>
-      <span class="prop-readonly">${esc(conn.from)} → ${esc(conn.to)}</span>
+      <span class="prop-readonly">${esc(fromLabel)} → ${esc(toLabel)}</span>
     </div>
+    <hr />
+    <div class="prop-threats-header">
+      <h4>Hot (${threats.length})</h4>
+      <button id="add-threat-btn" class="btn-sm">+ Lägg till hot</button>
+    </div>
+    <ul class="threat-list" id="threat-list">
+      ${threats.map((t) => threatItem(t, method)).join('')}
+    </ul>
   `;
 
   panel.querySelector<HTMLInputElement>('#conn-label')?.addEventListener('change', (e) => {
     updateConnection(conn.id, { label: (e.target as HTMLInputElement).value });
+  });
+
+  panel.querySelector<HTMLButtonElement>('#add-threat-btn')?.addEventListener('click', () => {
+    onThreat(conn.id);
+  });
+
+  panel.querySelectorAll<HTMLButtonElement>('[data-edit-threat]').forEach((btn) => {
+    btn.addEventListener('click', () => onThreat(conn.id, btn.dataset['editThreat']!));
+  });
+
+  panel.querySelectorAll<HTMLButtonElement>('[data-del-threat]').forEach((btn) => {
+    btn.addEventListener('click', () => removeThreat(btn.dataset['delThreat']!));
   });
 }
 

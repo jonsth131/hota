@@ -568,6 +568,38 @@ hr { border: none; border-top: 1px solid var(--border); margin: 12px 0; }
 .btn-danger { background: var(--danger); border-color: var(--danger); color: #fff; }
 .btn-danger:hover { opacity: 0.85; }
 .btn-icon { padding: 5px; font-size: 16px; line-height: 1; }
+.btn-icon:disabled { opacity: 0.35; cursor: not-allowed; }
+
+/* ── Report filters ─────────────────────────────────────── */
+.report-filters {
+  display: flex; gap: 8px; padding: 8px 16px;
+  background: var(--surface-2); border-bottom: 1px solid var(--border);
+}
+.report-filters select {
+  background: var(--surface); border: 1px solid var(--border);
+  color: var(--text); border-radius: 5px; padding: 4px 8px;
+  font-size: 12px; font-family: inherit; cursor: pointer;
+}
+
+/* ── Help table ─────────────────────────────────────────── */
+.help-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.help-table td { padding: 6px 8px; border-bottom: 1px solid var(--border); }
+.help-table tr:last-child td { border-bottom: none; }
+.help-table td:first-child { width: 220px; white-space: nowrap; }
+kbd {
+  display: inline-block; padding: 1px 6px; border-radius: 4px;
+  background: var(--surface-2); border: 1px solid var(--border);
+  font-size: 11px; font-family: ui-monospace, monospace;
+}
+
+/* ── Notes textarea ─────────────────────────────────────── */
+.prop-group textarea {
+  width: 100%; resize: vertical; min-height: 60px; font-size: 12px;
+  background: var(--surface-2); border: 1px solid var(--border);
+  color: var(--text); border-radius: 5px; padding: 5px 8px;
+  font-family: inherit;
+}
+.prop-group textarea:focus { outline: 2px solid var(--accent); border-color: var(--accent); }
 
 .select {
   background: var(--surface-2); border: 1px solid var(--border);

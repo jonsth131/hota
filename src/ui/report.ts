@@ -4,8 +4,8 @@
  * with severity/status statistics. Exports via browser print → PDF.
  */
 
-import type { Threat, DiagramElement } from '../types.js';
-import { getThreats, getElements, getMetadata, getMethodology } from '../store/model.js';
+import type { Threat, DiagramElement, Connection } from '../types.js';
+import { getThreats, getElements, getConnections, getMetadata, getMethodology } from '../store/model.js';
 
 const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
@@ -50,7 +50,7 @@ function buildElementSection(el: DiagramElement, threats: Threat[]): string {
     (a, b) => (SEVERITY_ORDER[a.severity] ?? 9) - (SEVERITY_ORDER[b.severity] ?? 9),
   );
   const rows = sorted.map((t) => `
-    <tr>
+    <tr data-severity="${esc(t.severity)}" data-status="${esc(t.status)}">
       <td><span class="report-badge ${severityClass(t.severity)}">${esc(t.severity)}</span></td>
       <td class="report-threat-title">${esc(t.title)}</td>
       <td>${esc(t.category)}</td>
@@ -74,19 +74,38 @@ function buildElementSection(el: DiagramElement, threats: Threat[]): string {
     </section>`;
 }
 
-function buildUnattached(threats: Threat[], elements: DiagramElement[]): string {
-  const elementIds = new Set(elements.map((e) => e.id));
-  const orphans = threats.filter((t) => !elementIds.has(t.elementId));
+function buildConnectionSection(conn: Connection, threats: Threat[], elements: DiagramElement[]): string {
+  const fromEl   = elements.find((e) => e.id === conn.from);
+  const toEl     = elements.find((e) => e.id === conn.to);
+  const fromName = fromEl?.label ?? conn.from;
+  const toName   = toEl?.label   ?? conn.to;
+  const label    = conn.label ? `${esc(conn.label)} (${esc(fromName)} → ${esc(toName)})` : `${esc(fromName)} → ${esc(toName)}`;
+  const fakeEl: DiagramElement = {
+    id: conn.id, type: 'Process', x: 0, y: 0, w: 0, h: 0,
+    label: label.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>'),
+    metadata: {},
+  };
+  const section = buildElementSection(fakeEl, threats);
+  return section.replace(
+    /<span class="report-el-type">\([^)]*\)<\/span>/,
+    '<span class="report-el-type">(Dataflöde)</span>',
+  );
+}
+
+function buildUnattached(threats: Threat[], elements: DiagramElement[], connections: Connection[]): string {
+  const knownIds = new Set([...elements.map((e) => e.id), ...connections.map((c) => c.id)]);
+  const orphans = threats.filter((t) => !knownIds.has(t.elementId));
   if (!orphans.length) return '';
   const fakeEl: DiagramElement = { id: '', type: 'Process', x: 0, y: 0, w: 0, h: 0, label: 'Okopplade hot', metadata: {} };
   return buildElementSection(fakeEl, orphans);
 }
 
 function buildReportHtml(): string {
-  const threats  = getThreats();
-  const elements = getElements();
-  const meta     = getMetadata();
-  const method   = getMethodology();
+  const threats      = getThreats();
+  const elements     = getElements();
+  const connections  = getConnections();
+  const meta         = getMetadata();
+  const method       = getMethodology();
 
   const grouped = new Map<string, Threat[]>();
   for (const t of threats) {
@@ -98,6 +117,11 @@ function buildReportHtml(): string {
   const elementSections = elements
     .filter((el) => grouped.has(el.id))
     .map((el) => buildElementSection(el, grouped.get(el.id)!))
+    .join('');
+
+  const connectionSections = connections
+    .filter((c) => grouped.has(c.id))
+    .map((c) => buildConnectionSection(c, grouped.get(c.id)!, elements))
     .join('');
 
   const today = new Date().toLocaleDateString('sv-SE');
@@ -122,7 +146,7 @@ function buildReportHtml(): string {
 
       ${threats.length === 0
         ? '<p class="report-empty">Inga hot har identifierats ännu.</p>'
-        : elementSections + buildUnattached(threats, elements)
+        : elementSections + connectionSections + buildUnattached(threats, elements, connections)
       }
     </div>`;
 }
@@ -147,6 +171,18 @@ export function openReportModal(): void {
           <button class="modal-close" aria-label="Stäng">✕</button>
         </div>
       </div>
+      <div class="report-filters">
+        <select id="filter-severity" title="Filtrera på allvarlighetsgrad">
+          <option value="">Alla allvarlighetsgrader</option>
+          <option>Critical</option><option>High</option>
+          <option>Medium</option><option>Low</option><option>Informational</option>
+        </select>
+        <select id="filter-status" title="Filtrera på status">
+          <option value="">Alla statusar</option>
+          <option>Open</option><option>Mitigated</option><option>Accepted</option>
+          <option>Transferred</option><option>In Progress</option><option>N/A</option>
+        </select>
+      </div>
       <div class="modal-body report-body">
         ${buildReportHtml()}
       </div>
@@ -156,6 +192,22 @@ export function openReportModal(): void {
   overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
   document.body.appendChild(overlay);
   overlay.focus();
+
+  // Filter wiring
+  const applyFilter = (): void => {
+    const sev = overlay.querySelector<HTMLSelectElement>('#filter-severity')?.value ?? '';
+    const st  = overlay.querySelector<HTMLSelectElement>('#filter-status')?.value ?? '';
+    overlay.querySelectorAll<HTMLTableRowElement>('tbody tr').forEach((row) => {
+      const match = (!sev || row.dataset['severity'] === sev) && (!st || row.dataset['status'] === st);
+      row.style.display = match ? '' : 'none';
+    });
+    overlay.querySelectorAll<HTMLElement>('.report-element-section').forEach((section) => {
+      const hasVisible = section.querySelectorAll('tbody tr:not([style*="display: none"])').length > 0;
+      section.style.display = hasVisible ? '' : 'none';
+    });
+  };
+  overlay.querySelector('#filter-severity')?.addEventListener('change', applyFilter);
+  overlay.querySelector('#filter-status')?.addEventListener('change', applyFilter);
 
   overlay.querySelector<HTMLButtonElement>('#report-print-btn')?.addEventListener('click', () => {
     // Temporarily add a print-target class so CSS can scope @media print to just the report body
