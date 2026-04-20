@@ -366,6 +366,11 @@ const THEMES: ThemeOption[] = [
   { id: 'solarized-dark',   name: 'Solarized Dark',   emoji: '🌞' },
   { id: 'solarized-light',  name: 'Solarized Light',  emoji: '💛' },
   { id: 'dracula',     name: 'Dracula',          emoji: '🧛' },
+  { id: 'monokai',     name: 'Monokai',          emoji: '🌊' },
+  { id: 'tokyonight',  name: 'Tokyo Night',      emoji: '🌸' },
+  { id: 'midnight',    name: 'Midnight',         emoji: '🦇' },
+  { id: 'synthwave',   name: 'Synthwave',        emoji: '🔥' },
+  { id: 'onelight',    name: 'One Light',        emoji: '☁️' },
   { id: 'nineties',    name: '90s Web',          emoji: '💾' },
   { id: 'hacker',      name: 'Hacker',           emoji: '💻' },
 ];
