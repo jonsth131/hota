@@ -12,7 +12,7 @@ import {
   showBoundaryHandles, hideBoundaryHandles, isBoundaryDragging, startBoundaryLineDrag,
   getBoundaryPoints, commitBoundaryPoints,
 } from './boundary.js';
-import { updateBoundaryPolylineDirect } from './elements.js';
+import { updateBoundaryPolylineDirect, toSmoothPathD } from './elements.js';
 import { getCurrentTool } from '../ui/sidebar.js';
 import { openHelpModal, openSaveModal } from '../ui/modals.js';
 import {
@@ -82,10 +82,10 @@ function makeRectOverlay(x: number, y: number, w: number, h: number, cls: string
   return r;
 }
 
-function makePolylineOverlay(pts: { x: number; y: number }[], cls: string): SVGPolylineElement {
-  const p = document.createElementNS(SVG_NS, 'polyline') as SVGPolylineElement;
+function makePolylineOverlay(pts: { x: number; y: number }[], cls: string): SVGPathElement {
+  const p = document.createElementNS(SVG_NS, 'path') as SVGPathElement;
   p.setAttribute('fill', 'none');
-  p.setAttribute('points', pts.map((pt) => `${pt.x},${pt.y}`).join(' '));
+  p.setAttribute('d', toSmoothPathD(pts));
   p.classList.add(cls);
   return p;
 }

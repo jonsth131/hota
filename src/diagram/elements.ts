@@ -58,12 +58,12 @@ export function updateElementLabel(id: string, label: string): void {
   if (t) t.textContent = label;
 }
 
-/** Directly updates TrustBoundary polyline SVG during drag (no model update). */
+/** Directly updates TrustBoundary smooth path SVG during drag (no model update). */
 export function updateBoundaryPolylineDirect(id: string, points: BoundaryPoint[]): void {
   const g = nodeRegistry.get(id);
   if (!g) return;
-  const ptStr = toPolylineStr(points);
-  g.querySelectorAll<SVGPolylineElement>('polyline').forEach((pl) => pl.setAttribute('points', ptStr));
+  const d = toSmoothPathD(points);
+  g.querySelectorAll<SVGPathElement>('path').forEach((p) => p.setAttribute('d', d));
   // Reposition label above the midpoint of the polyline
   const t = g.querySelector<SVGTextElement>('.el-label');
   if (t && points.length >= 2) {
@@ -228,14 +228,14 @@ function buildDataStore(g: SVGGElement, el: DiagramElement): void {
 
 function buildTrustBoundaryLine(g: SVGGElement, el: DiagramElement): void {
   const pts = getBoundaryPoints(el);
-  const ptStr = toPolylineStr(pts);
-  // Thick invisible polyline for hit-testing (easy to click even on thin line)
-  const hit = makeSvg<SVGPolylineElement>('polyline');
-  hit.setAttribute('points', ptStr);
+  const d = toSmoothPathD(pts);
+  // Thick invisible path for hit-testing (easy to click even on thin line)
+  const hit = makeSvg<SVGPathElement>('path');
+  hit.setAttribute('d', d);
   hit.classList.add('el-boundary-hit');
-  // Visible dashed polyline
-  const line = makeSvg<SVGPolylineElement>('polyline');
-  line.setAttribute('points', ptStr);
+  // Visible dashed path
+  const line = makeSvg<SVGPathElement>('path');
+  line.setAttribute('d', d);
   line.classList.add('el-trust-boundary-line');
   g.appendChild(hit);
   g.appendChild(line);
@@ -298,6 +298,24 @@ function buildPorts(g: SVGGElement, el: DiagramElement): void {
 
 export function toPolylineStr(pts: { x: number; y: number }[]): string {
   return pts.map((p) => `${p.x},${p.y}`).join(' ');
+}
+
+/** Converts boundary points to a smooth SVG path using quadratic bezier through midpoints. */
+export function toSmoothPathD(pts: { x: number; y: number }[]): string {
+  if (pts.length === 0) return '';
+  if (pts.length === 1) return `M${pts[0]!.x},${pts[0]!.y}`;
+  if (pts.length === 2) return `M${pts[0]!.x},${pts[0]!.y} L${pts[1]!.x},${pts[1]!.y}`;
+  const d: string[] = [`M${pts[0]!.x},${pts[0]!.y}`];
+  for (let i = 1; i < pts.length - 1; i++) {
+    const curr = pts[i]!;
+    const next = pts[i + 1]!;
+    const mx = (curr.x + next.x) / 2;
+    const my = (curr.y + next.y) / 2;
+    d.push(`Q${curr.x},${curr.y} ${mx},${my}`);
+  }
+  const last = pts[pts.length - 1]!;
+  d.push(`L${last.x},${last.y}`);
+  return d.join(' ');
 }
 
 function makeSvg<T extends SVGElement>(tag: string): T {
