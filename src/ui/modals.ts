@@ -355,6 +355,14 @@ interface ThemeOption {
   emoji: string;
 }
 
+const LIGHT_THEMES = new Set(['light', 'catppuccin-latte', 'solarized-light', 'onelight']);
+
+export function applyColorScheme(themeId: string): void {
+  const value = LIGHT_THEMES.has(themeId) ? 'only light' : 'dark';
+  document.querySelector<HTMLMetaElement>('meta[name="color-scheme"]')
+    ?.setAttribute('content', value);
+}
+
 const THEMES: ThemeOption[] = [
   { id: 'dark',        name: 'Dark',             emoji: '🌑' },
   { id: 'light',       name: 'Light',            emoji: '☀️' },
@@ -411,6 +419,7 @@ export function openThemeModal(): void {
       const themeId = btn.dataset['themeId']!;
       document.documentElement.dataset['theme'] = themeId;
       localStorage.setItem('hota-theme', themeId);
+      applyColorScheme(themeId);
       modal.querySelectorAll('.theme-card').forEach((b) => b.classList.remove('active'));
       btn.classList.add('active');
     });

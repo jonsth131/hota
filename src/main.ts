@@ -14,7 +14,7 @@ import { initBoundary, updateBoundaryHandles } from './diagram/boundary.js';
 import { initToolbar } from './ui/toolbar.js';
 import { initSidebar, highlightListItems } from './ui/sidebar.js';
 import { initProperties, selectItems } from './ui/properties.js';
-import { openMetadataModal, openThreatModal, openThemeModal } from './ui/modals.js';
+import { openMetadataModal, openThreatModal, openThemeModal, applyColorScheme } from './ui/modals.js';
 import { openReportModal } from './ui/report.js';
 import {
   addElement, getElements, getConnections, on, elementDefaultSize,
@@ -25,6 +25,7 @@ import { initPersistence, loadFromStorage } from './store/persistence.js';
 
 const savedTheme = localStorage.getItem('hota-theme') ?? 'dark';
 document.documentElement.dataset['theme'] = savedTheme;
+applyColorScheme(savedTheme);
 
 // ── DOM refs ───────────────────────────────────────────────
 

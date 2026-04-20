@@ -8,6 +8,7 @@
 
 :root,
 [data-theme="dark"] {
+  color-scheme: dark;
   --bg: #1a1b26;
   --surface: #24283b;
   --surface-2: #2f3549;
@@ -24,6 +25,7 @@
 }
 
 [data-theme="light"] {
+  color-scheme: only light;
   --bg: #f5f5f5;
   --surface: #ffffff;
   --surface-2: #ebebeb;
@@ -40,6 +42,7 @@
 }
 
 [data-theme="nord"] {
+  color-scheme: dark;
   --bg: #2e3440;
   --surface: #3b4252;
   --surface-2: #434c5e;
@@ -56,6 +59,7 @@
 }
 
 [data-theme="gruvbox"] {
+  color-scheme: dark;
   --bg: #282828;
   --surface: #3c3836;
   --surface-2: #504945;
@@ -72,6 +76,7 @@
 }
 
 [data-theme="rosepine"] {
+  color-scheme: dark;
   --bg: #191724;
   --surface: #1f1d2e;
   --surface-2: #26233a;
@@ -88,6 +93,7 @@
 }
 
 [data-theme="catppuccin-mocha"] {
+  color-scheme: dark;
   --bg: #1e1e2e;
   --surface: #313244;
   --surface-2: #45475a;
@@ -104,6 +110,7 @@
 }
 
 [data-theme="catppuccin-latte"] {
+  color-scheme: only light;
   --bg: #eff1f5;
   --surface: #ffffff;
   --surface-2: #e6e9ef;
@@ -120,6 +127,7 @@
 }
 
 [data-theme="solarized-dark"] {
+  color-scheme: dark;
   --bg: #002b36;
   --surface: #073642;
   --surface-2: #0a4050;
@@ -136,6 +144,7 @@
 }
 
 [data-theme="solarized-light"] {
+  color-scheme: only light;
   --bg: #fdf6e3;
   --surface: #eee8d5;
   --surface-2: #e8e2cf;
@@ -152,6 +161,7 @@
 }
 
 [data-theme="dracula"] {
+  color-scheme: dark;
   --bg: #282a36;
   --surface: #343746;
   --surface-2: #44475a;
@@ -168,6 +178,7 @@
 }
 
 [data-theme="nineties"] {
+  color-scheme: only light;
   --bg: #000080;
   --surface: #c0c0c0;
   --surface-2: #d4d0c8;
@@ -185,6 +196,7 @@
 }
 
 [data-theme="hacker"] {
+  color-scheme: dark;
   --bg: #000000;
   --surface: #0a0a0a;
   --surface-2: #111111;
@@ -204,6 +216,7 @@
 [data-theme="hacker"] * { text-shadow: 0 0 4px currentColor; }
 
 [data-theme="monokai"] {
+  color-scheme: dark;
   --bg: #272822;
   --surface: #3e3d32;
   --surface-2: #49483e;
@@ -220,6 +233,7 @@
 }
 
 [data-theme="tokyonight"] {
+  color-scheme: dark;
   --bg: #1a1b2e;
   --surface: #24283b;
   --surface-2: #2a2f42;
@@ -236,6 +250,7 @@
 }
 
 [data-theme="midnight"] {
+  color-scheme: dark;
   --bg: #0d0f1a;
   --surface: #151829;
   --surface-2: #1e2238;
@@ -252,6 +267,7 @@
 }
 
 [data-theme="synthwave"] {
+  color-scheme: dark;
   --bg: #1a0533;
   --surface: #2d0f5e;
   --surface-2: #3d1578;
@@ -271,6 +287,7 @@
 [data-theme="synthwave"] * { text-shadow: 0 0 6px currentColor; }
 
 [data-theme="onelight"] {
+  color-scheme: only light;
   --bg: #fafafa;
   --surface: #ffffff;
   --surface-2: #f0f0f0;
