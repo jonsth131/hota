@@ -105,12 +105,12 @@ export function updateConnectionPathsForElement(
 
 // ── Ghost line (during connect) ────────────────────────────
 
-export function showGhostLine(svg: SVGSVGElement, x1: number, y1: number, x2: number, y2: number): void {
+export function showGhostLine(layer: SVGElement, x1: number, y1: number, x2: number, y2: number): void {
   hideGhostLine();
   ghostLine = document.createElementNS(SVG_NS, 'path') as SVGPathElement;
   ghostLine.setAttribute('d', `M${x1},${y1} L${x2},${y2}`);
   ghostLine.classList.add('ghost-line');
-  svg.appendChild(ghostLine);
+  layer.appendChild(ghostLine);
 }
 
 export function hideGhostLine(): void {

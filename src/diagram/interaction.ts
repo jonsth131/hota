@@ -23,6 +23,7 @@ let selectedIds: Set<string> = new Set();
 let onSelectCb: ((ids: Set<string>) => void) | null = null;
 let selLayer: SVGGElement | null = null;
 let svgEl: SVGSVGElement | null = null;
+let ghostLayer: SVGGElement | null = null;
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
@@ -34,6 +35,7 @@ export function initInteraction(
   onSelectCb = onSelect;
   selLayer = selectionLayer;
   svgEl = svg;
+  ghostLayer = svg.querySelector<SVGGElement>('#canvas-root');
   initMarquee(selectionLayer);
 
   svg.addEventListener('mousedown', onMouseDown);
@@ -411,7 +413,7 @@ function onMouseMove(e: MouseEvent): void {
   if (connecting) {
     const w = screenToWorld(e.clientX, e.clientY);
     // Draw ghost line from the stored start position to current cursor
-    showGhostLine(svgEl!, connecting.fromX, connecting.fromY, w.x, w.y);
+    showGhostLine(ghostLayer!, connecting.fromX, connecting.fromY, w.x, w.y);
   }
 }
 
