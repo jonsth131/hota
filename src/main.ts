@@ -99,6 +99,17 @@ on('model:loaded', (model: Model) => {
   rerenderConnections();
 });
 
+on('element:reordered', () => {
+  const selIds = getSelectedIds();
+  clearElements();
+  getElements().forEach((el) => renderElement(el, elLayer));
+  rerenderConnections();
+  // Re-apply selected class after all nodes are recreated
+  for (const id of selIds) {
+    document.querySelector<SVGGElement>(`[data-id="${id}"]`)?.classList.add('selected');
+  }
+});
+
 // ── Persistence ────────────────────────────────────────────
 // Must be initialized AFTER all on() listeners so model:loaded fires into registered handlers.
 

@@ -30,6 +30,17 @@ export function renderElement(el: DiagramElement, layer: SVGGElement): SVGGEleme
   buildShape(g, el);
   buildLabel(g, el);
   buildPorts(g, el);
+  if (el.groupId) {
+    g.setAttribute('data-group-id', el.groupId);
+    if (el.type !== 'TrustBoundary') {
+      const badge = makeSvg<SVGCircleElement>('circle');
+      badge.setAttribute('cx', String(el.w - 5));
+      badge.setAttribute('cy', '5');
+      badge.setAttribute('r', '4');
+      badge.classList.add('group-badge');
+      g.appendChild(badge);
+    }
+  }
   // Trust zones and boundaries go behind all other elements
   if (el.type === 'TrustBoundary' || el.type === 'TrustZone') {
     layer.prepend(g);

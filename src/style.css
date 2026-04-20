@@ -506,6 +506,20 @@ select   { cursor: pointer; }
   font-size: 0.875rem;
   color: var(--text-muted);
 }
+.prop-row {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+.prop-row .btn { flex: 1; }
+.prop-grouped { font-size: 12px; color: var(--accent); }
+
+/* Group badge dot in SVG */
+.group-badge {
+  fill: var(--accent);
+  opacity: 0.75;
+  pointer-events: none;
+}
 
 /* ── Resize handles ─────────────────────────────────────── */
 .resize-border {

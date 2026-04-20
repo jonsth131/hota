@@ -7,6 +7,7 @@ import {
   getMetadata, updateMetadata, getMethodology, setMethodology,
   elementDefaultSize,
   undo, redo, canUndo, canRedo,
+  groupElements, ungroupElements, bringToFront, sendToBack,
   on,
 } from '../store/model.js';
 
@@ -261,5 +262,64 @@ describe('Undo / Redo', () => {
     undo();
     expect(getConnections()).toHaveLength(1);
     expect(getThreats()).toHaveLength(1);
+  });
+});
+
+describe('Grouping', () => {
+  it('groupElements assigns a shared groupId to all members', () => {
+    const a = addElement({ type: 'Process', x: 0, y: 0 });
+    const b = addElement({ type: 'Process', x: 100, y: 0 });
+    groupElements([a.id, b.id]);
+    const els = getElements();
+    expect(els[0]?.groupId).toBeDefined();
+    expect(els[0]?.groupId).toBe(els[1]?.groupId);
+  });
+
+  it('groupElements returns empty string for < 2 ids', () => {
+    const a = addElement({ type: 'Process', x: 0, y: 0 });
+    const result = groupElements([a.id]);
+    expect(result).toBe('');
+    expect(getElements()[0]?.groupId).toBeUndefined();
+  });
+
+  it('ungroupElements removes groupId from all members', () => {
+    const a = addElement({ type: 'Process', x: 0, y: 0 });
+    const b = addElement({ type: 'Process', x: 100, y: 0 });
+    const gid = groupElements([a.id, b.id]);
+    ungroupElements(gid);
+    getElements().forEach((el) => expect(el.groupId).toBeUndefined());
+  });
+
+  it('auto-ungroups when second-to-last member is removed', () => {
+    const a = addElement({ type: 'Process', x: 0, y: 0 });
+    const b = addElement({ type: 'Process', x: 100, y: 0 });
+    groupElements([a.id, b.id]);
+    removeElement(a.id);
+    expect(getElements()[0]?.groupId).toBeUndefined();
+  });
+});
+
+describe('Z-order', () => {
+  it('bringToFront moves element to end of array', () => {
+    const a = addElement({ type: 'Process', x: 0, y: 0 });
+    const b = addElement({ type: 'Process', x: 100, y: 0 });
+    bringToFront([a.id]);
+    const ids = getElements().map((e) => e.id);
+    expect(ids[ids.length - 1]).toBe(a.id);
+  });
+
+  it('sendToBack moves element to start of array', () => {
+    const a = addElement({ type: 'Process', x: 0, y: 0 });
+    const b = addElement({ type: 'Process', x: 100, y: 0 });
+    sendToBack([b.id]);
+    expect(getElements()[0]?.id).toBe(b.id);
+  });
+
+  it('bringToFront is undoable', () => {
+    const a = addElement({ type: 'Process', x: 0, y: 0 });
+    addElement({ type: 'Process', x: 100, y: 0 });
+    bringToFront([a.id]);
+    undo();
+    expect(getElements()[0]?.id).toBe(a.id);
   });
 });

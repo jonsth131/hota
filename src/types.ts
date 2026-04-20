@@ -20,6 +20,7 @@ export interface DiagramElement {
   h: number;
   label: string;
   metadata: ElementMetadata;
+  groupId?: string;
 }
 
 export interface Connection {
@@ -81,6 +82,7 @@ export interface EventMap {
   'threat:updated': Threat;
   'threat:removed': string;
   'model:loaded': Model;
+  'element:reordered': undefined;
   '*': { event: string; payload: unknown };
 }
 

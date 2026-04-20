@@ -159,6 +159,7 @@ export function removeElement(id: string): void {
   const idx = state.elements.findIndex((e) => e.id === id);
   if (idx === -1) return;
   pushHistory();
+  const removedGroupId = state.elements[idx]!.groupId;
   state.elements.splice(idx, 1);
   state.connections
     .filter((c) => c.from === id || c.to === id)
@@ -168,7 +169,61 @@ export function removeElement(id: string): void {
     .filter((t) => t.elementId === id)
     .map((t) => t.id)
     .forEach(_removeThreatInternal);
+  // Auto-ungroup if only one group member remains
+  if (removedGroupId) {
+    const remaining = state.elements.filter((e) => e.groupId === removedGroupId);
+    if (remaining.length === 1) {
+      delete remaining[0]!.groupId;
+      emit('element:updated', remaining[0]!);
+    }
+  }
   emit('element:removed', id);
+}
+
+// ── Grouping ───────────────────────────────────────────────
+
+export function groupElements(ids: string[]): string {
+  if (ids.length < 2) return '';
+  pushHistory();
+  const groupId = generateId('grp');
+  for (const id of ids) {
+    const el = state.elements.find((e) => e.id === id);
+    if (el) {
+      el.groupId = groupId;
+      emit('element:updated', el);
+    }
+  }
+  return groupId;
+}
+
+export function ungroupElements(groupId: string): void {
+  const members = state.elements.filter((e) => e.groupId === groupId);
+  if (!members.length) return;
+  pushHistory();
+  for (const el of members) {
+    delete el.groupId;
+    emit('element:updated', el);
+  }
+}
+
+// ── Z-order ────────────────────────────────────────────────
+
+export function bringToFront(ids: string[]): void {
+  if (!ids.length) return;
+  pushHistory();
+  const toMove = state.elements.filter((e) => ids.includes(e.id));
+  const rest = state.elements.filter((e) => !ids.includes(e.id));
+  state.elements.splice(0, state.elements.length, ...rest, ...toMove);
+  emit('element:reordered', undefined);
+}
+
+export function sendToBack(ids: string[]): void {
+  if (!ids.length) return;
+  pushHistory();
+  const toMove = state.elements.filter((e) => ids.includes(e.id));
+  const rest = state.elements.filter((e) => !ids.includes(e.id));
+  state.elements.splice(0, state.elements.length, ...toMove, ...rest);
+  emit('element:reordered', undefined);
 }
 
 // ── Connections ────────────────────────────────────────────

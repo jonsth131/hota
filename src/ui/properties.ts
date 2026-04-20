@@ -6,6 +6,7 @@ import { esc } from '../utils/sanitize.js';
 import {
   getElements, getConnections, getThreats, getMethodology,
   updateElement, updateConnection, removeThreat, removeElement, on,
+  groupElements, ungroupElements, bringToFront, sendToBack,
 } from '../store/model.js';
 
 let _currentId: string | null = null;
@@ -14,6 +15,7 @@ let _currentIds: Set<string> = new Set();
 export function initProperties(container: HTMLElement, onThreat: (elementId: string, threatId?: string) => void): void {
   on('element:updated',    () => refresh(container, onThreat));
   on('element:removed',    () => showEmpty(container));
+  on('element:reordered',  () => refresh(container, onThreat));
   on('connection:updated', () => refresh(container, onThreat));
   on('connection:removed', () => showEmpty(container));
   on('threat:added',       () => refresh(container, onThreat));
@@ -47,13 +49,38 @@ export function selectItems(ids: Set<string>, container: HTMLElement, onThreat: 
 function showMultiSelect(container: HTMLElement, ids: Set<string>): void {
   const panel = container.querySelector<HTMLElement>('#properties-content');
   if (!panel) return;
+  const elements = getElements().filter((e) => ids.has(e.id));
+  const sharedGroupId = elements[0]?.groupId &&
+    elements.every((e) => e.groupId === elements[0]!.groupId)
+    ? elements[0].groupId
+    : null;
+
   panel.innerHTML = `
     <div class="multi-select-info">
       <p class="multi-select-count">${ids.size} element markerade</p>
-      <button id="btn-delete-selected" class="btn btn-danger btn-sm">
-        🗑 Radera markerade
-      </button>
+      <div class="prop-row">
+        <button id="btn-to-front-multi" class="btn btn-secondary btn-sm" title="Till förgrunden">↑ Förgrunden</button>
+        <button id="btn-to-back-multi"  class="btn btn-secondary btn-sm" title="Till bakgrunden">↓ Bakgrunden</button>
+      </div>
+      <div class="prop-row">
+        <button id="btn-group-selected" class="btn btn-secondary btn-sm">⬡ Gruppera</button>
+        ${sharedGroupId ? `<button id="btn-ungroup-multi" class="btn btn-secondary btn-sm">Avgruppera</button>` : ''}
+      </div>
+      <button id="btn-delete-selected" class="btn btn-danger btn-sm">🗑 Radera markerade</button>
     </div>`;
+
+  panel.querySelector('#btn-to-front-multi')?.addEventListener('click', () => {
+    bringToFront([...ids]);
+  });
+  panel.querySelector('#btn-to-back-multi')?.addEventListener('click', () => {
+    sendToBack([...ids]);
+  });
+  panel.querySelector('#btn-group-selected')?.addEventListener('click', () => {
+    groupElements([...ids]);
+  });
+  panel.querySelector('#btn-ungroup-multi')?.addEventListener('click', () => {
+    if (sharedGroupId) ungroupElements(sharedGroupId);
+  });
   panel.querySelector('#btn-delete-selected')?.addEventListener('click', () => {
     for (const id of _currentIds) removeElement(id);
     _currentIds = new Set();
@@ -108,6 +135,21 @@ function showElement(
       <label for="prop-notes">Anteckningar</label>
       <textarea id="prop-notes" rows="3" placeholder="Fri text om elementet…">${esc((el.metadata['notes'] as string) ?? '')}</textarea>
     </div>
+    <div class="prop-group">
+      <label>Lager</label>
+      <div class="prop-row">
+        <button id="btn-to-front" class="btn btn-secondary btn-sm" title="Till förgrunden">↑ Förgrunden</button>
+        <button id="btn-to-back"  class="btn btn-secondary btn-sm" title="Till bakgrunden">↓ Bakgrunden</button>
+      </div>
+    </div>
+    ${el.groupId ? `
+    <div class="prop-group">
+      <label>Grupp</label>
+      <div class="prop-row">
+        <span class="prop-readonly prop-grouped">⬡ Grupperad</span>
+        <button id="btn-ungroup" class="btn btn-secondary btn-sm">Avgruppera</button>
+      </div>
+    </div>` : ''}
     <hr />
     <div class="prop-threats-header">
       <h4>Hot (${threats.length})</h4>
@@ -124,6 +166,16 @@ function showElement(
 
   panel.querySelector<HTMLTextAreaElement>('#prop-notes')?.addEventListener('change', (e) => {
     updateElement(el.id, { metadata: { ...el.metadata, notes: (e.target as HTMLTextAreaElement).value } });
+  });
+
+  panel.querySelector<HTMLButtonElement>('#btn-to-front')?.addEventListener('click', () => {
+    bringToFront([el.id]);
+  });
+  panel.querySelector<HTMLButtonElement>('#btn-to-back')?.addEventListener('click', () => {
+    sendToBack([el.id]);
+  });
+  panel.querySelector<HTMLButtonElement>('#btn-ungroup')?.addEventListener('click', () => {
+    if (el.groupId) ungroupElements(el.groupId);
   });
 
   panel.querySelector<HTMLButtonElement>('#add-threat-btn')?.addEventListener('click', () => {

@@ -273,6 +273,31 @@ function onMouseDown(e: MouseEvent): void {
       return;
     }
 
+    // If element is part of a group, select and drag the whole group together
+    if (el.groupId) {
+      const groupMembers = getElements().filter((x) => x.groupId === el.groupId);
+      clearSelectionVisual();
+      selectedIds = new Set(groupMembers.map((x) => x.id));
+      for (const gid of selectedIds) {
+        document.querySelector<SVGGElement>(`[data-id="${gid}"]`)?.classList.add('selected');
+      }
+      renderSelectionOverlays();
+      onSelectCb?.(new Set(selectedIds));
+
+      const items = new Map<string, { ox: number; oy: number; el: DiagramElement }>();
+      for (const mem of groupMembers) {
+        if (mem.type === 'TrustBoundary') {
+          const pts = getBoundaryPoints(mem);
+          items.set(mem.id, { ox: pts[0]!.x, oy: pts[0]!.y, el: mem });
+        } else {
+          items.set(mem.id, { ox: mem.x, oy: mem.y, el: mem });
+        }
+      }
+      multiDrag = { start: { x: w.x, y: w.y }, dx: 0, dy: 0, items };
+      e.stopPropagation();
+      return;
+    }
+
     // Single-select + drag
     replaceSelection(id, el);
     drag = { id, ox: el.x, oy: el.y, startX: w.x, startY: w.y, currentX: el.x, currentY: el.y };
