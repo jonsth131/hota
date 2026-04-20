@@ -41,12 +41,7 @@ export function renderElement(el: DiagramElement, layer: SVGGElement): SVGGEleme
       g.appendChild(badge);
     }
   }
-  // Trust zones and boundaries go behind all other elements
-  if (el.type === 'TrustBoundary' || el.type === 'TrustZone') {
-    layer.prepend(g);
-  } else {
-    layer.appendChild(g);
-  }
+  layer.appendChild(g);
   nodeRegistry.set(el.id, g);
   return g;
 }

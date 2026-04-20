@@ -31,6 +31,7 @@ applyColorScheme(savedTheme);
 
 const svg          = document.querySelector<SVGSVGElement>('#diagram-svg')!;
 const connLayer    = svg.querySelector<SVGGElement>('#conn-layer')!;
+const tzLayer      = svg.querySelector<SVGGElement>('#tz-layer')!;
 const elLayer      = svg.querySelector<SVGGElement>('#el-layer')!;
 const selectLayer  = svg.querySelector<SVGGElement>('#selection-layer')!;
 const defs         = svg.querySelector<SVGDefsElement>('defs')!;
@@ -62,12 +63,12 @@ initInteraction(svg, selectLayer, (ids) => {
 // ── State → render bindings ────────────────────────────────
 
 on('element:added', (el) => {
-  renderElement(el, elLayer);
+  renderElement(el, layerFor(el.type));
   rerenderConnections();
 });
 
 on('element:updated', (el) => {
-  renderElement(el, elLayer);
+  renderElement(el, layerFor(el.type));
   rerenderConnections();
   // Re-apply selected class and handles after node was recreated
   const selIds = getSelectedIds();
@@ -95,14 +96,14 @@ on('connection:removed', (id) => removeConnectionNode(id));
 on('model:loaded', (model: Model) => {
   clearElements();
   clearAllConnections();
-  model.elements.forEach((el) => renderElement(el, elLayer));
+  model.elements.forEach((el) => renderElement(el, layerFor(el.type)));
   rerenderConnections();
 });
 
 on('element:reordered', () => {
   const selIds = getSelectedIds();
   clearElements();
-  getElements().forEach((el) => renderElement(el, elLayer));
+  getElements().forEach((el) => renderElement(el, layerFor(el.type)));
   rerenderConnections();
   // Re-apply selected class after all nodes are recreated
   for (const id of selIds) {
@@ -117,6 +118,10 @@ initPersistence();
 loadFromStorage();
 
 // ── Place element from sidebar ─────────────────────────────
+
+function layerFor(type: ElementType): SVGGElement {
+  return type === 'TrustBoundary' || type === 'TrustZone' ? tzLayer : elLayer;
+}
 
 function placeElement(type: ElementType, sx: number, sy: number): void {
   const world = screenToWorld(sx, sy);

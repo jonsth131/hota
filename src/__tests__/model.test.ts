@@ -302,14 +302,14 @@ describe('Grouping', () => {
 describe('Z-order', () => {
   it('bringToFront moves element to end of array', () => {
     const a = addElement({ type: 'Process', x: 0, y: 0 });
-    const b = addElement({ type: 'Process', x: 100, y: 0 });
+    addElement({ type: 'Process', x: 100, y: 0 });
     bringToFront([a.id]);
     const ids = getElements().map((e) => e.id);
     expect(ids[ids.length - 1]).toBe(a.id);
   });
 
   it('sendToBack moves element to start of array', () => {
-    const a = addElement({ type: 'Process', x: 0, y: 0 });
+    addElement({ type: 'Process', x: 0, y: 0 });
     const b = addElement({ type: 'Process', x: 100, y: 0 });
     sendToBack([b.id]);
     expect(getElements()[0]?.id).toBe(b.id);
