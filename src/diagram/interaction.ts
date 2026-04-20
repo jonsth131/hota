@@ -36,9 +36,9 @@ export function initInteraction(
   initMarquee(selectionLayer);
 
   svg.addEventListener('mousedown', onMouseDown);
-  svg.addEventListener('mousemove', onMouseMove);
-  svg.addEventListener('mouseup', onMouseUp);
   svg.addEventListener('dblclick', onDblClick);
+  window.addEventListener('mousemove', onMouseMove);
+  window.addEventListener('mouseup', onMouseUp);
   window.addEventListener('keydown', onKeyDown);
 }
 
@@ -385,7 +385,7 @@ function onMouseMove(e: MouseEvent): void {
   if (connecting) {
     const w = screenToWorld(e.clientX, e.clientY);
     // Draw ghost line from the stored start position to current cursor
-    showGhostLine(e.currentTarget as SVGSVGElement, connecting.fromX, connecting.fromY, w.x, w.y);
+    showGhostLine(svgEl!, connecting.fromX, connecting.fromY, w.x, w.y);
   }
 }
 
