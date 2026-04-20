@@ -8,7 +8,7 @@ import type { ElementType, Model } from './types.js';
 import { initCanvas, screenToWorld } from './diagram/canvas.js';
 import { renderElement, removeElementNode, clearAll as clearElements } from './diagram/elements.js';
 import { renderConnection, removeConnectionNode, clearAllConnections, initArrowMarker } from './diagram/connections.js';
-import { initInteraction, getSelectedIds, selectElementById } from './diagram/interaction.js';
+import { initInteraction, getSelectedIds, selectElementById, clearSelection } from './diagram/interaction.js';
 import { initResize, updateResizeHandles } from './diagram/resize.js';
 import { initBoundary, updateBoundaryHandles } from './diagram/boundary.js';
 import { initToolbar } from './ui/toolbar.js';
@@ -85,8 +85,14 @@ on('element:updated', (el) => {
 });
 
 on('element:removed', (id) => {
+  const wasSelected = getSelectedIds().has(id);
   removeElementNode(id);
   rerenderConnections();
+  if (wasSelected) {
+    clearSelection();
+    selectItems(new Set(), propPanel, (elId, threatId) => openThreatModal(elId, threatId));
+    highlightListItems(new Set());
+  }
 });
 
 on('connection:added', () => rerenderConnections());
