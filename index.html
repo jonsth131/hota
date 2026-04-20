@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="sv" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hota – Hotmodellering</title>
+    <meta name="description" content="Hota är ett gratis, klientbaserat hotmodelleringsverktyg som stödjer STRIDE och PASTA. Ingen inloggning, ingen server – allt i webbläsaren." />
+    <meta name="theme-color" content="#1e293b" />
+
+    <!-- Open Graph -->
+    <meta property="og:title"       content="Hota – Hotmodellering" />
+    <meta property="og:description" content="Gratis, klientbaserat hotmodelleringsverktyg. Stödjer STRIDE och PASTA." />
+    <meta property="og:type"        content="website" />
+    <meta property="og:image"       content="/favicon.svg" />
+  </head>
+  <body class="app-layout">
+    <noscript>
+      <div style="padding:2rem;text-align:center;font-family:sans-serif">
+        Hota kräver JavaScript. Aktivera JavaScript i din webbläsare för att använda verktyget.
+      </div>
+    </noscript>
+
+    <!-- ── Toolbar ─────────────────────────────────────────── -->
+    <header id="toolbar" class="toolbar">
+      <div class="toolbar-left">
+        <span class="app-logo">🛡️ Hota</span>
+        <span id="project-name" class="project-name">Namnlöst projekt</span>
+      </div>
+      <div class="toolbar-center">
+        <select id="method-select" title="Hotmodelleringsmetod">
+          <option value="STRIDE">STRIDE</option>
+          <option value="PASTA">PASTA</option>
+        </select>
+      </div>
+      <div class="toolbar-right">
+        <!-- Zoom -->
+        <div class="toolbar-group">
+          <button id="zoom-out"   title="Zooma ut"  class="btn-icon">−</button>
+          <span   id="zoom-label" class="zoom-label">100%</span>
+          <button id="zoom-in"    title="Zooma in"  class="btn-icon">+</button>
+          <button id="zoom-reset" title="Återställ vy" class="btn-icon">⌖</button>
+        </div>
+        <!-- Save / Open / New -->
+        <div class="toolbar-group">
+          <button id="report-btn"  class="btn-secondary" title="Hotrapport">📋 Rapport</button>
+          <button id="save-btn"  class="btn-secondary" title="Spara diagram">💾 Spara</button>
+          <label  class="btn-secondary" title="Öppna fil">
+            📂 Öppna
+            <input id="open-file" type="file" accept=".json,.yaml,.yml" hidden />
+          </label>
+          <button id="clear-btn" class="btn-secondary" title="Nytt diagram">🗑️ Nytt</button>
+        </div>
+        <!-- Meta / Theme -->
+        <div class="toolbar-group">
+          <button id="metadata-btn" class="btn-secondary" title="Projektmetadata">⚙️</button>
+          <button id="theme-btn"    class="btn-secondary" title="Välj tema">🎨</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- ── Body ───────────────────────────────────────────── -->
+    <div class="app-body">
+
+      <!-- Left sidebar: palette + element list -->
+      <aside id="sidebar" class="sidebar">
+        <section class="palette">
+          <h3 class="panel-title">Figurer</h3>
+          <button data-tool="select"        class="tool-btn active" title="Markera">↖ Markera</button>
+          <button data-tool="Process"       class="tool-btn" title="Process">⭕ Process</button>
+          <button data-tool="ExternalEntity" class="tool-btn" title="Extern aktör">▭ Extern aktör</button>
+          <button data-tool="DataStore"     class="tool-btn" title="Datalager">🗄 Datalager</button>
+          <button data-tool="TrustBoundary" class="tool-btn" title="Förtroendesegräns">╌ Gräns</button>
+          <button data-tool="TrustZone" class="tool-btn" title="Förtroendezon">🔲 Zon</button>
+        </section>
+        <section class="element-list-section">
+          <h3 class="panel-title">Element</h3>
+          <ul id="element-list" class="element-list"></ul>
+        </section>
+      </aside>
+
+      <!-- Canvas -->
+      <main class="canvas-wrapper">
+        <svg id="diagram-svg" xmlns="http://www.w3.org/2000/svg">
+          <defs></defs>
+          <g id="canvas-root">
+            <g id="conn-layer"></g>
+            <g id="el-layer"></g>
+            <g id="selection-layer"></g>
+          </g>
+        </svg>
+      </main>
+
+      <!-- Right panel: properties -->
+      <aside id="properties" class="properties-panel">
+        <h3 class="panel-title">Egenskaper</h3>
+        <div id="properties-content">
+          <p class="text-muted">Välj ett element eller en koppling för att se egenskaper.</p>
+        </div>
+      </aside>
+
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
