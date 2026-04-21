@@ -151,7 +151,9 @@ function showElement(
       </div>
     </div>` : ''}
     <div class="prop-group">
-      <button id="btn-delete-el" class="btn btn-danger btn-sm">🗑 Radera element</button>
+      <div class="prop-row">
+        <button id="btn-delete-el" class="btn btn-danger btn-sm">🗑 Radera element</button>
+      </div>
     </div>
     <hr />
     <div class="prop-threats-header">
@@ -230,7 +232,9 @@ function showConnection(
       <span class="prop-readonly">${esc(fromLabel)} → ${esc(toLabel)}</span>
     </div>
     <div class="prop-group">
-      <button id="btn-delete-conn" class="btn btn-danger btn-sm">🗑 Radera koppling</button>
+      <div class="prop-row">
+        <button id="btn-delete-conn" class="btn btn-danger btn-sm">🗑 Radera koppling</button>
+      </div>
     </div>
     <hr />
     <div class="prop-threats-header">
