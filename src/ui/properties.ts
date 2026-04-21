@@ -5,7 +5,7 @@ import type { DiagramElement, Connection, Threat, Severity, ThreatStatus } from 
 import { esc } from '../utils/sanitize.js';
 import {
   getElements, getConnections, getThreats, getMethodology,
-  updateElement, updateConnection, removeThreat, removeElement, on,
+  updateElement, updateConnection, removeThreat, removeElement, removeConnection, on,
   groupElements, ungroupElements, bringToFront, sendToBack,
 } from '../store/model.js';
 
@@ -150,6 +150,9 @@ function showElement(
         <button id="btn-ungroup" class="btn btn-secondary btn-sm">Avgruppera</button>
       </div>
     </div>` : ''}
+    <div class="prop-group">
+      <button id="btn-delete-el" class="btn btn-danger btn-sm">🗑 Radera element</button>
+    </div>
     <hr />
     <div class="prop-threats-header">
       <h4>Hot (${threats.length})</h4>
@@ -176,6 +179,10 @@ function showElement(
   });
   panel.querySelector<HTMLButtonElement>('#btn-ungroup')?.addEventListener('click', () => {
     if (el.groupId) ungroupElements(el.groupId);
+  });
+
+  panel.querySelector<HTMLButtonElement>('#btn-delete-el')?.addEventListener('click', () => {
+    removeElement(el.id);
   });
 
   panel.querySelector<HTMLButtonElement>('#add-threat-btn')?.addEventListener('click', () => {
@@ -222,6 +229,9 @@ function showConnection(
       <label>Från → Till</label>
       <span class="prop-readonly">${esc(fromLabel)} → ${esc(toLabel)}</span>
     </div>
+    <div class="prop-group">
+      <button id="btn-delete-conn" class="btn btn-danger btn-sm">🗑 Radera koppling</button>
+    </div>
     <hr />
     <div class="prop-threats-header">
       <h4>Hot (${threats.length})</h4>
@@ -234,6 +244,10 @@ function showConnection(
 
   panel.querySelector<HTMLInputElement>('#conn-label')?.addEventListener('change', (e) => {
     updateConnection(conn.id, { label: (e.target as HTMLInputElement).value });
+  });
+
+  panel.querySelector<HTMLButtonElement>('#btn-delete-conn')?.addEventListener('click', () => {
+    removeConnection(conn.id);
   });
 
   panel.querySelector<HTMLButtonElement>('#add-threat-btn')?.addEventListener('click', () => {

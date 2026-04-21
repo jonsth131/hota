@@ -5,7 +5,7 @@
 import type { DiagramElement } from '../types.js';
 import { screenToWorld } from './canvas.js';
 import { getElementNode } from './elements.js';
-import { updateElement, removeElement, getElements, getConnections, addConnection, undo, redo, groupElements, ungroupElements, bringToFront, sendToBack } from '../store/model.js';
+import { updateElement, removeElement, removeConnection, getElements, getConnections, addConnection, undo, redo, groupElements, ungroupElements, bringToFront, sendToBack } from '../store/model.js';
 import { showGhostLine, hideGhostLine, updateConnectionPathsForElement } from './connections.js';
 import { showResizeHandles, hideResizeHandles, updateResizeHandles, isResizeDragging } from './resize.js';
 import {
@@ -541,7 +541,11 @@ function onKeyDown(e: KeyboardEvent): void {
   }
   if ((e.key === 'Delete' || e.key === 'Backspace') && e.target === document.body) {
     if (selectedIds.size === 0) return;
-    for (const id of selectedIds) removeElement(id);
+    const connIds = new Set(getConnections().map((c) => c.id));
+    for (const id of selectedIds) {
+      if (connIds.has(id)) removeConnection(id);
+      else removeElement(id);
+    }
     clearSelectionVisual();
     selectedIds = new Set();
     onSelectCb?.(new Set());
