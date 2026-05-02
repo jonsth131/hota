@@ -2,7 +2,7 @@
 
 **Hota** är ett klientbaserat hotmodelleringsverktyg som körs helt i webbläsaren – ingen server, ingen inloggning, inga data som lämnar din dator.
 
-> UI-språk: **Svenska**
+[![Netlify Status](https://api.netlify.com/api/v1/badges/141101e6-5708-4085-807f-fc10720ab08b/deploy-status)](https://app.netlify.com/projects/hota-app/deploys)
 
 ## Funktioner
 
@@ -17,7 +17,7 @@
 
 ### Krav
 
-- [Node.js](https://nodejs.org/) ≥ 18
+- [Node.js](https://nodejs.org/) ≥ 22
 - npm ≥ 9
 
 ### Installation
