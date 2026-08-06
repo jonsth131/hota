@@ -24,7 +24,7 @@
     "vitest": "^4.1.6"
   },
   "dependencies": {
-    "@tailwindcss/vite": "^4.3.0",
+    "@tailwindcss/vite": "^4.3.3",
     "js-yaml": "^4.3.0",
     "tailwindcss": "^4.3.0"
   }
